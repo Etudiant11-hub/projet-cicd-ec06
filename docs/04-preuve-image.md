@@ -3,9 +3,9 @@
 ## Image publiée
 
 - Nom de l'image : ghcr.io/etudiant11-hub/projet-cicd-ec06
-- Tag principal : latest **(vérifier après le run, ou indiquer `sha-<commit>` si tu préfères tracer un commit précis)**
-- Digest : **à compléter** — visible dans le résumé du run du workflow `02-publish-ghcr.yml` (section "Résumé publication" du Step Summary), ou via `docker image inspect ghcr.io/etudiant11-hub/projet-cicd-ec06:latest`
-- Lien GHCR ou capture : https://github.com/Etudiant11-hub/projet-cicd-ec06/pkgs/container/projet-cicd-ec06 **(à vérifier une fois l'image publiée — GHCR crée automatiquement cette page)**
+- Tag principal : latest (et sha-df3e1df pour la traçabilité exacte de ce commit)
+- Digest : sha256:4bd03ff07d2c153fd15847f43189350e0450d72c301fc6b024e74ef7ad3bbac5
+- Lien GHCR ou capture : https://github.com/Etudiant11-hub/projet-cicd-ec06/actions/runs/28544541141
 
 ## Explication
 

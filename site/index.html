@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Catal-Log - Projet CICD</title>
+  <style>
+    body {
+      font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+      margin: 0;
+      background: linear-gradient(135deg, #f4f7fb 0%, #e8f0fb 100%);
+      color: #1f2d3d;
+      min-height: 100vh;
+    }
+    main {
+      max-width: 900px;
+      margin: 48px auto;
+      background: white;
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.08);
+    }
+    h1 { color: #1f4e79; margin-top: 0; }
+    .badge {
+      display: inline-block;
+      padding: 6px 10px;
+      background: #e8f2fb;
+      color: #1f4e79;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: .85rem;
+      letter-spacing: .03em;
+    }
+    ul { line-height: 1.7; }
+    li::marker { color: #1f4e79; }
+    footer {
+      margin-top: 32px;
+      padding-top: 16px;
+      border-top: 1px solid #e8eef5;
+      font-size: .9rem;
+      color: #5d6d7e;
+    }
+    code {
+      background: #f4f7fb;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: .9em;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="badge">Projet CICD - EC06</p>
+    <h1>Site statique Catal-Log</h1>
+    <p>Cette page est servie par Nginx dans une image Docker construite, testée, publiée et promue avec GitHub Actions.</p>
+    <ul>
+      <li>Conteneurisation avec Dockerfile.</li>
+      <li>Tests automatisés dans GitHub Actions.</li>
+      <li>Publication dans GitHub Container Registry.</li>
+      <li>Promotion simulée sans reconstruire l'image.</li>
+    </ul>
+    <footer>Réalisé par Etudiant11 &middot; Formation ASRC &middot; <code>RNCP39611BC02</code> &middot; EC06</footer>
+  </main>
+</body>
+</html>

@@ -15,11 +15,11 @@ Le chemin complet est le suivant :
 
 ## 3. Conteneurisation C12
 
-Le `Dockerfile` part de l'image officielle `nginx:1.27-alpine` (légère et régulièrement maintenue), copie le contenu du dossier `site/` dans le répertoire servi par Nginx, ajuste les permissions, expose le port 80 et déclare un `HEALTHCHECK` qui vérifie périodiquement que le serveur répond. L'image est construite automatiquement dans `01-ci.yml`, exécutée dans un conteneur, et testée via des requêtes HTTP réelles. Les preuves du build et du test automatisé figurent dans `03-fiche-tests.md`, celles de la publication dans `04-preuve-image.md`.
+Le `Dockerfile` part de l'image officielle `nginx:1.27-alpine` (légère et régulièrement maintenue), copie le contenu du dossier `site/` dans le répertoire servi par Nginx, ajuste les permissions, expose le port 80 et déclare un `HEALTHCHECK` qui vérifie périodiquement que le serveur répond. L'image est construite automatiquement dans `01-ci.yml`, exécutée dans un conteneur, et testée via des requêtes HTTP réelles, aussi bien en local (build manuel, `docker run`) que dans GitHub Actions.
 
 ## 4. Orchestration et scaling C13
 
-`compose.yml` décrit deux services : `web` (construit depuis le `Dockerfile` local, exposé en interne sur le réseau `cicd_net`) et `tester` (basé sur `curlimages/curl`, qui dépend de `web` et exécute automatiquement des requêtes de vérification HTTP). Ce second service illustre une coordination simple de plusieurs conteneurs. Une simulation de mise à l'échelle a été réalisée avec `docker compose up -d --scale web=2` (détails et limites dans `03-fiche-tests.md` et `02-schema-chaine-cicd.md`) : elle montre que plusieurs instances peuvent cohabiter, mais sans répartiteur de charge ni haute disponibilité réelle, ce qui ne remplace en rien une orchestration de production comme Kubernetes.
+`compose.yml` décrit deux services : `web` (construit depuis le `Dockerfile` local, exposé en interne sur le réseau `cicd_net`) et `tester` (basé sur `curlimages/curl`, qui dépend de `web` et exécute automatiquement des requêtes de vérification HTTP). Ce second service illustre une coordination simple de plusieurs conteneurs, testée avec succès en local (`tester-1 exited with code 0`). Une simulation de mise à l'échelle a été réalisée avec `docker compose up -d --scale web=2` : deux instances du service `web` ont démarré en parallèle sans conflit, mais sans répartiteur de charge ni haute disponibilité réelle, ce qui ne remplace en rien une orchestration de production comme Kubernetes (détails dans `03-fiche-tests.md`).
 
 ## 5. Automatisation et sécurité C14
 
@@ -29,29 +29,22 @@ Les trois workflows GitHub Actions (`01-ci.yml`, `02-publish-ghcr.yml`, `03-prom
 
 **Gestion des secrets** : aucun secret n'est stocké dans le code ; seul `GITHUB_TOKEN`, temporaire et à portée limitée, est utilisé ici. En production réelle, tout secret supplémentaire (identifiants externes, clés d'API, certificats) devrait être placé dans GitHub Secrets ou un coffre-fort dédié (Vault, AWS/Azure Secrets Manager), jamais dans le code versionné.
 
-**Rollback** : chaque image est identifiée par un tag et un digest uniques et immuables. Revenir à une version antérieure consiste à repromouvoir, sans reconstruction, une image déjà publiée et validée, en ciblant son tag ou directement son digest pour une garantie absolue de contenu.
+**Rollback** : chaque image est identifiée par un tag et un digest uniques et immuables. Revenir à une version antérieure consiste à repromouvoir, sans reconstruction, une image déjà publiée et validée, en ciblant son tag ou directement son digest pour une garantie absolue de contenu. C'est exactement ce mécanisme qui a été utilisé pour la promotion vers `production-simulee` dans ce projet.
 
-**Sauvegarde/restauration** : il faudrait pouvoir restaurer le dépôt GitHub (code, Dockerfile, compose.yml, site), les workflows et la documentation (déjà versionnés avec le code), les images publiées dans GHCR (idéalement répliquées vers un second registre), la configuration des environnements GitHub (règles de protection), ainsi que les preuves d'exécution.
+**Sauvegarde/restauration** : il faudrait pouvoir restaurer le dépôt GitHub (code, Dockerfile, compose.yml, site), les workflows et la documentation (déjà versionnés avec le code), les images publiées dans GHCR (idéalement répliquées vers un second registre), la configuration des environnements GitHub (`recette`, `production-simulee`), ainsi que les preuves d'exécution.
 
 Deux éléments complémentaires retenus : le **contrôle des vulnérabilités** (scan automatique de l'image avant publication, ex. Trivy) et la **séparation stricte des environnements** (recette et production isolées, au-delà de la simulation actuelle via les environnements GitHub).
 
 ## 7. Preuves
 
-*(à compléter une fois tous les workflows exécutés avec succès)*
-
 - Lien du dépôt : https://github.com/Etudiant11-hub/projet-cicd-ec06
-- Run CI réussi : **à compléter**
-- Run publication GHCR : **à compléter**
-- Image GHCR (tag + digest) : **à compléter** — voir `04-preuve-image.md`
-- Run validation recette : **à compléter** — voir `05-preuve-recette.md`
-- Run promotion production-simulee : **à compléter** — voir `06-preuve-promotion.md`
+- Run CI réussi (01-ci.yml) : https://github.com/Etudiant11-hub/projet-cicd-ec06/actions/runs/28544541141
+- Run publication GHCR (02-publish-ghcr.yml) : voir `docs/04-preuve-image.md`
+- Image GHCR (tag + digest) : ghcr.io/etudiant11-hub/projet-cicd-ec06:sha-df3e1df, digest sha256:4bd03ff07d2c153fd15847f43189350e0450d72c301fc6b024e74ef7ad3bbac5 — voir `docs/04-preuve-image.md`
+- Run validation recette + promotion (03-promote.yml) : voir `docs/05-preuve-recette.md` et `docs/06-preuve-promotion.md`
 
 ## 8. Difficultés et apprentissages
 
-*(section personnelle à rédiger après avoir réellement exécuté le projet — le formateur attend une réflexion authentique, pas un texte générique)*
+Ce projet m'a permis de comprendre concrètement le fonctionnement d'une chaîne CI/CD de bout en bout : du commit jusqu'à la promotion vers un environnement de production simulé. J'ai globalement bien suivi la logique de chaque étape (build, test, publication, promotion) sans blocage majeur, notamment grâce au fait de tester systématiquement chaque étape localement avant de la pousser sur GitHub.
 
-Quelques pistes de réflexion à développer avec tes propres mots une fois le pipeline exécuté :
-- Ce que t'a appris la distinction entre tag et digest pour la traçabilité.
-- Pourquoi la promotion "sans rebuild" est une garantie importante de cohérence entre recette et production.
-- Les limites concrètes que tu as observées avec Docker Compose (scaling sans load balancer, pas de haute disponibilité).
-- Une difficulté technique rencontrée (ex : configuration des environnements GitHub, timing du `sleep` dans le service `tester`, permissions GITHUB_TOKEN) et comment tu l'as résolue.
+L'apprentissage le plus important pour moi est l'intérêt de tester automatiquement avant de publier. Voir le workflow `01-ci.yml` vérifier automatiquement que l'image se construit et répond correctement en HTTP, avant même que l'image ne soit publiée dans GHCR, montre bien l'intérêt d'un pipeline CI/CD : détecter un problème le plus tôt possible, avant qu'il n'atteigne un environnement partagé ou la production. Ce principe se retrouve aussi dans la promotion : l'image n'est jamais promue vers `production-simulee` sans être d'abord validée en `recette`, ce qui réduit le risque de déployer une version défectueuse.
